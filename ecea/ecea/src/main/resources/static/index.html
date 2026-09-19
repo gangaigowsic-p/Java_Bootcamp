@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ECEA Bank</title>
+    <style>
+        :root { color-scheme: light; font-family: Georgia, serif; background: #f2eee5; color: #17221b; }
+        body { margin: 0; min-height: 100vh; display: grid; place-items: center; background: radial-gradient(circle at top right, #d6e5d4, transparent 45%), #f2eee5; }
+        main { width: min(92vw, 760px); padding: 48px 0; }
+        header { margin-bottom: 28px; }
+        h1 { margin: 0 0 8px; font-size: clamp(2.4rem, 7vw, 5rem); font-weight: 400; letter-spacing: -0.04em; }
+        p { color: #536158; font-family: Arial, sans-serif; }
+        section { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+        form, .lookup { background: #fffdf8; border: 1px solid #d7d9cd; padding: 24px; box-shadow: 8px 8px 0 #c9d8c7; }
+        h2 { margin-top: 0; font-size: 1.2rem; }
+        label { display: block; margin: 14px 0 6px; font: 0.8rem Arial, sans-serif; text-transform: uppercase; letter-spacing: .08em; color: #536158; }
+        input, button { width: 100%; box-sizing: border-box; padding: 12px; font: 1rem Arial, sans-serif; border: 1px solid #aeb9ad; background: #fff; }
+        button { margin-top: 18px; background: #17221b; color: #fffdf8; cursor: pointer; }
+        button:hover { background: #35523d; }
+        #result { min-height: 48px; white-space: pre-wrap; font-family: Consolas, monospace; color: #35523d; }
+        @media (max-width: 650px) { section { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+<main>
+    <header>
+        <p>ECEA / ACCOUNT DESK</p>
+        <h1>Bank accounts, simply.</h1>
+        <p>Create an account or retrieve one by its ID.</p>
+    </header>
+    <section>
+        <form id="create-form">
+            <h2>Create account</h2>
+            <label for="id">Account ID</label>
+            <input id="id" type="number" required>
+            <label for="name">Name</label>
+            <input id="name" required>
+            <label for="amount">Amount</label>
+            <input id="amount" type="number" required>
+            <button type="submit">Create account</button>
+        </form>
+        <div class="lookup">
+            <h2>Find account</h2>
+            <label for="lookup-id">Account ID</label>
+            <input id="lookup-id" type="number" required>
+            <button id="lookup-button" type="button">Find account</button>
+            <p id="result">Results appear here.</p>
+        </div>
+    </section>
+</main>
+<script>
+    const result = document.querySelector('#result');
+    document.querySelector('#create-form').addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const account = {
+            id: Number(document.querySelector('#id').value),
+            name: document.querySelector('#name').value,
+            amount: Number(document.querySelector('#amount').value)
+        };
+        const response = await fetch('/api/bank/create', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(account) });
+        result.textContent = response.ok ? `Created:\n${JSON.stringify(await response.json(), null, 2)}` : `Create failed (${response.status})`;
+    });
+    document.querySelector('#lookup-button').addEventListener('click', async () => {
+        const id = document.querySelector('#lookup-id').value;
+        const response = await fetch(`/api/bank/get/${id}`);
+        result.textContent = response.ok ? JSON.stringify(await response.json(), null, 2) : `Account not found (${response.status})`;
+    });
+</script>
+</body>
+</html>
